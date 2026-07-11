@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Gameplay.Scripts.Data;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -8,19 +9,20 @@ namespace Gameplay.Scripts.UI
     public class FoodNeedToServeCard : MonoBehaviour
     {
         [Header("Food")]
-        [SerializeField] private Image foodImage;
+        [SerializeField] protected Image foodImage;
+        [SerializeField] protected TMP_Text turnToFinishTMP;
 
         [Header("Ingredients")]
-        [SerializeField] private RectTransform ingredientContent;
-        [SerializeField] private RectTransform ingredientPoolRoot;
-        [SerializeField] private IngredientCard ingredientCardPrefab;
+        [SerializeField] protected RectTransform ingredientContent;
+        [SerializeField] protected RectTransform ingredientPoolRoot;
+        [SerializeField] protected IngredientCard ingredientCardPrefab;
 
-        private readonly List<IngredientCard> ingredientCards = new();
-        private ObjectPool<IngredientCard> ingredientPool;
+        protected readonly List<IngredientCard> ingredientCards = new();
+        protected ObjectPool<IngredientCard> ingredientPool;
 
-        private FoodNodeData foodNodeData;
+        protected FoodNodeData foodNodeData;
 
-        private void Awake()
+        protected void Awake()
         {
             ingredientPool = new ObjectPool<IngredientCard>(
                 ingredientCardPrefab,
@@ -32,6 +34,7 @@ namespace Gameplay.Scripts.UI
             foodNodeData = nodeData;
 
             foodImage.sprite = nodeData.Sprite;
+            turnToFinishTMP.text = nodeData.TurnsToCreate.ToString();
 
             ClearIngredients();
 
@@ -44,7 +47,7 @@ namespace Gameplay.Scripts.UI
             }
         }
 
-        private void ClearIngredients()
+        protected void ClearIngredients()
         {
             foreach (var card in ingredientCards)
                 ingredientPool.Release(card);

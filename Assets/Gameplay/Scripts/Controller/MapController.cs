@@ -149,5 +149,10 @@ namespace Gameplay.Scripts.Controller
                 foodData = food
             });
         }
+
+        public List<FoodData> GetAllFood()
+        {
+            return mapData.FoodData;
+        }
     }
 }

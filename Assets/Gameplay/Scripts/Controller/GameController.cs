@@ -155,5 +155,17 @@ namespace Gameplay.Scripts.Controller
         }
 
         #endregion
+
+        public int CurrentTurn
+        {
+            get => currentTurn;
+            set => currentTurn = value;
+        }
+
+        public int CurrentCustomerTurn
+        {
+            get => currentCustomerTurn;
+            set => currentCustomerTurn = value;
+        }
     }
 }
