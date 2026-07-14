@@ -8,6 +8,8 @@ namespace Gameplay.Scripts.Data
     [Serializable]
     public class FoodNodeData
     {
+        [SerializeField] protected string id;
+        [SerializeField] protected bool enabled = true;
         [SerializeField] protected string name;
         [SerializeField] protected Sprite sprite;
         [SerializeField] protected List<FoodNodeData> parents = new List<FoodNodeData>();
@@ -15,7 +17,7 @@ namespace Gameplay.Scripts.Data
         [SerializeField] protected int turnsToCreate = 0;
         [SerializeField] protected int baseBuyInCost = -1;
         [SerializeField] protected int autoTransformIn = -1;
-        [SerializeField] protected FoodNodeData autoTransform = new FoodNodeData();
+        [SerializeField] protected FoodNodeData autoTransform = null;
         [SerializeField] protected int autoDestroyIn = -1;
 
         public string Name
@@ -70,6 +72,18 @@ namespace Gameplay.Scripts.Data
         {
             get => autoTransform;
             set => autoTransform = value;
+        }
+
+        public string ID
+        {
+            get => id;
+            set => id = value;
+        }
+
+        public bool Enabled
+        {
+            get => enabled;
+            set => enabled = value;
         }
     }
 }

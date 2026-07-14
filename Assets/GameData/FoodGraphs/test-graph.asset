@@ -1,0 +1,74 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2dd801300c33b794b91b1d601cce1b51, type: 3}
+  m_Name: test-graph
+  m_EditorClassIdentifier: 
+  serializedNodes:
+  - id: d329b029-0dd5-4de2-8f00-102fe4edaf13
+    name: Diced Potato
+    sprite: {fileID: 0}
+    turnsToCreate: 0
+    baseBuyInCost: -1
+    autoTransformIn: -1
+    autoTransformNodeId: 
+    autoDestroyIn: -1
+    enabled: 1
+    position: {x: 871.2, y: 212.80002}
+  - id: fa5bcf83-bc13-420a-acb4-9dd5ccf10fd9
+    name: Peeled Potato
+    sprite: {fileID: 0}
+    turnsToCreate: 0
+    baseBuyInCost: -1
+    autoTransformIn: -1
+    autoTransformNodeId: 
+    autoDestroyIn: -1
+    enabled: 1
+    position: {x: 416, y: 120.799995}
+  - id: 23c09367-4605-4d90-8e22-1f24b10c9e5e
+    name: Sliced Potato
+    sprite: {fileID: 0}
+    turnsToCreate: 0
+    baseBuyInCost: -1
+    autoTransformIn: -1
+    autoTransformNodeId: 
+    autoDestroyIn: -1
+    enabled: 1
+    position: {x: 871.2, y: -132}
+  - id: 94f52929-9e92-4f4d-a02a-ed2218a232af
+    name: Minced Potato
+    sprite: {fileID: 0}
+    turnsToCreate: 0
+    baseBuyInCost: -1
+    autoTransformIn: -1
+    autoTransformNodeId: 
+    autoDestroyIn: -1
+    enabled: 1
+    position: {x: 871.2, y: 555.19995}
+  - id: 36103cc1-b7b8-44c6-a34a-1f4d107cc4a4
+    name: Raw Potato
+    sprite: {fileID: 0}
+    turnsToCreate: 0
+    baseBuyInCost: -1
+    autoTransformIn: -1
+    autoTransformNodeId: 
+    autoDestroyIn: -1
+    enabled: 1
+    position: {x: 62.4, y: 120.799995}
+  serializedEdges:
+  - parentId: fa5bcf83-bc13-420a-acb4-9dd5ccf10fd9
+    childId: d329b029-0dd5-4de2-8f00-102fe4edaf13
+  - parentId: fa5bcf83-bc13-420a-acb4-9dd5ccf10fd9
+    childId: 23c09367-4605-4d90-8e22-1f24b10c9e5e
+  - parentId: fa5bcf83-bc13-420a-acb4-9dd5ccf10fd9
+    childId: 94f52929-9e92-4f4d-a02a-ed2218a232af
+  - parentId: 36103cc1-b7b8-44c6-a34a-1f4d107cc4a4
+    childId: fa5bcf83-bc13-420a-acb4-9dd5ccf10fd9
