@@ -25,7 +25,7 @@ MonoBehaviour:
     position: {x: 871.2, y: 212.80002}
   - id: fa5bcf83-bc13-420a-acb4-9dd5ccf10fd9
     name: Peeled Potato
-    sprite: {fileID: 0}
+    sprite: {fileID: 10911, guid: 0000000000000000f000000000000000, type: 0}
     turnsToCreate: 0
     baseBuyInCost: -1
     autoTransformIn: -1
@@ -55,7 +55,7 @@ MonoBehaviour:
     position: {x: 871.2, y: 555.19995}
   - id: 36103cc1-b7b8-44c6-a34a-1f4d107cc4a4
     name: Raw Potato
-    sprite: {fileID: 0}
+    sprite: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
     turnsToCreate: 0
     baseBuyInCost: -1
     autoTransformIn: -1

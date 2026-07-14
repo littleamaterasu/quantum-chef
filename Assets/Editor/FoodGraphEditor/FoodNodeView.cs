@@ -142,14 +142,55 @@ namespace Editor.FoodGraphEditor
                 objectType = typeof(Sprite),
                 value = NodeData.Sprite
             };
+
+            // Sprite preview image container
+            var spritePreview = new Image();
+            spritePreview.style.width = 64;
+            spritePreview.style.height = 64;
+            spritePreview.style.marginTop = 4;
+            spritePreview.style.marginBottom = 4;
+            spritePreview.style.alignSelf = Align.Center;
+            spritePreview.style.borderTopWidth = 1;
+            spritePreview.style.borderBottomWidth = 1;
+            spritePreview.style.borderLeftWidth = 1;
+            spritePreview.style.borderRightWidth = 1;
+            spritePreview.style.borderTopColor = new Color(0.4f, 0.4f, 0.4f, 0.5f);
+            spritePreview.style.borderBottomColor = new Color(0.4f, 0.4f, 0.4f, 0.5f);
+            spritePreview.style.borderLeftColor = new Color(0.4f, 0.4f, 0.4f, 0.5f);
+            spritePreview.style.borderRightColor = new Color(0.4f, 0.4f, 0.4f, 0.5f);
+            spritePreview.style.borderBottomLeftRadius = 4;
+            spritePreview.style.borderBottomRightRadius = 4;
+            spritePreview.style.borderTopLeftRadius = 4;
+            spritePreview.style.borderTopRightRadius = 4;
+
+            Action<Sprite> updateSpritePreview = (Sprite s) =>
+            {
+                if (s != null)
+                {
+                    spritePreview.image = s.texture;
+                    spritePreview.style.display = DisplayStyle.Flex;
+                }
+                else
+                {
+                    spritePreview.image = null;
+                    spritePreview.style.display = DisplayStyle.None;
+                }
+            };
+
+            // Set initial state
+            updateSpritePreview(NodeData.Sprite);
+
             spriteField.RegisterValueChangedCallback(evt =>
             {
                 if (isUpdatingUI) return;
+                var newSprite = evt.newValue as Sprite;
                 OnRequestUndoRegistration?.Invoke("Change Node Sprite");
-                NodeData.Sprite = evt.newValue as Sprite;
+                NodeData.Sprite = newSprite;
+                updateSpritePreview(newSprite);
                 OnNodeModified?.Invoke();
             });
             customContainer.Add(spriteField);
+            customContainer.Add(spritePreview);
 
             // Turns to Create
             var turnsField = new IntegerField("Turns To Create") { value = NodeData.TurnsToCreate };
