@@ -19,7 +19,11 @@ namespace Gameplay.Scripts.Controller
         protected int currentTurn = 0;
         protected int currentCustomerTurn = 0;
 
-        public void StartGame()
+        // 24 hours
+        protected const int MAX_TURN = 24;
+
+        // gameMode: 0-easy, 1-normal, 2-hard
+        public void StartGame(int gameMode = 0)
         {
             currentTurn = 0;
             currentCustomerTurn = 0;
