@@ -9,6 +9,7 @@ namespace Gameplay.Scripts.Data
         public Sprite sprite;
         public List<FoodNodeData> requireFood = null;
         public int spawnTurn = 0;
+        public bool served = false;
         public CustomerData Clone()
         {
             return new CustomerData()

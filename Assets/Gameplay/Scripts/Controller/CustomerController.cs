@@ -1,82 +1,157 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Gameplay.Scripts.Data;
 
 namespace Gameplay.Scripts.Controller
 {
     public class CustomerController : Singleton<CustomerController>
     {
-        protected CustomerData customerData;
+        protected AllCustomerData allCustomerData;
 
-        // Number of customers per difficulty
+        protected ObjectPool<Customer> customerPool;
+
+        // Customer đang active trên scene
+        protected readonly Dictionary<string, Customer> customers = new();
+
+        // Lookup CustomerData theo id
+        protected readonly Dictionary<string, CustomerData> customerDataMap = new();
+
+        // ==========================================================
+        // CONFIG
+        // ==========================================================
+
         private const int EASY_CUSTOMER_COUNT = 5;
         private const int NORMAL_CUSTOMER_COUNT = 7;
         private const int HARD_CUSTOMER_COUNT = 9;
 
-        // Number of required foods per customer per difficulty
+        private const int START_SERVE_TIME = 6;
+
         private const int EASY_MIN_FOODS = 1;
         private const int EASY_MAX_FOODS = 1;
+
         private const int NORMAL_MIN_FOODS = 1;
         private const int NORMAL_MAX_FOODS = 2;
+
         private const int HARD_MIN_FOODS = 1;
         private const int HARD_MAX_FOODS = 3;
 
-        public void SetCustomerData(CustomerData customerData)
+        // ==========================================================
+
+        public void SetCustomerData(AllCustomerData allCustomerData)
         {
-            this.customerData = customerData;
+            this.allCustomerData = allCustomerData;
         }
 
-        public CustomerData UpdateTurn(int currentTurn)
+        public AllCustomerData UpdateTurn(int currentTurn)
         {
-            customerData = customerData.Clone();
-            return customerData;
+            allCustomerData = allCustomerData.Clone();
+
+            // Rebuild toàn bộ customer trên scene
+            foreach (Customer customer in customers.Values)
+            {
+                customerPool.Release(customer);
+            }
+
+            customers.Clear();
+            customerDataMap.Clear();
+
+            foreach (CustomerData data in allCustomerData.allCustomerData)
+            {
+                // Khách turn trước chưa được serve
+                if (data.spawnTurn == currentTurn - 1 && !data.served)
+                {
+                    Customer customer = customerPool.Get(null);
+                    customer.Setup(data);
+                    customer.OnServeFail();
+
+                    // nếu OnServeFail() không tự release thì:
+                    customerPool.Release(customer);
+
+                    continue;
+                }
+
+                // Khách xuất hiện ở turn hiện tại
+                if (data.spawnTurn == currentTurn && !data.served)
+                {
+                    Customer customer = customerPool.Get(null);
+
+                    customer.Setup(data);
+
+                    customers[data.id] = customer;
+                    customerDataMap[data.id] = data;
+                }
+            }
+
+            allCustomerData.createdAtTurn = currentTurn;
+
+            return allCustomerData;
         }
 
-        /// <summary>
-        /// Generates a randomized list of customers for the given game mode.
-        /// Each customer spawns at a random turn and requires leaf-node foods from the FoodGraph.
-        /// </summary>
-        /// <param name="gameMode">0 = easy, 1 = normal, 2 = hard</param>
-        /// <param name="maxTurn">Maximum turn number (inclusive upper bound for spawn turns)</param>
-        /// <param name="allNodes">All FoodNodeData nodes from the FoodGraph</param>
-        /// <returns>List of CustomerData sorted by spawnTurn ascending</returns>
-        public List<CustomerData> GenerateCustomers(int gameMode, int maxTurn, List<FoodNodeData> allNodes)
+        public void Serve(CustomerData customerData)
+        {
+            if (customerData == null)
+                return;
+
+            if (!customers.TryGetValue(customerData.id, out Customer customer))
+                return;
+
+            if (!customerDataMap.TryGetValue(customerData.id, out CustomerData data))
+                return;
+
+            if (data.served)
+                return;
+
+            data.served = true;
+
+            customer.OnServe();
+
+            customers.Remove(data.id);
+            customerDataMap.Remove(data.id);
+
+            // nếu OnServe() không tự release thì:
+            customerPool.Release(customer);
+        }
+
+        // ==========================================================
+
+        public AllCustomerData GenerateCustomers(int gameMode, int maxTurn, List<FoodNodeData> edibleFood)
         {
             Random rng = new Random();
 
             int customerCount = GetCustomerCount(gameMode);
-            List<FoodNodeData> leafNodes = GetLeafNodes(allNodes);
 
-            if (leafNodes.Count == 0)
-                return new List<CustomerData>();
+            if (edibleFood.Count == 0)
+                return new AllCustomerData();
 
-            List<CustomerData> customers = new List<CustomerData>(customerCount);
+            List<CustomerData> customers = new(customerCount);
 
             for (int i = 0; i < customerCount; i++)
             {
-                int spawnTurn = rng.Next(1, maxTurn + 1);
-                List<FoodNodeData> requiredFoods = PickRandomFoods(leafNodes, gameMode, rng);
+                int spawnTurn = rng.Next(START_SERVE_TIME, maxTurn);
 
-                CustomerData customer = new CustomerData
+                List<FoodNodeData> requiredFoods =
+                    PickRandomFoods(edibleFood, gameMode, rng);
+
+                customers.Add(new CustomerData
                 {
                     id = Guid.NewGuid().ToString(),
                     spawnTurn = spawnTurn,
-                    requireFood = requiredFoods
-                };
-
-                customers.Add(customer);
+                    requireFood = requiredFoods,
+                    served = false,
+                    sprite = AssetController.Instance.GetRandomCustomerSprite()
+                });
             }
 
-            // Sort by spawn turn ascending
             customers.Sort((a, b) => a.spawnTurn.CompareTo(b.spawnTurn));
 
-            return customers;
+            return new AllCustomerData
+            {
+                allCustomerData = customers
+            };
         }
 
-        /// <summary>
-        /// Returns the number of customers for the given game mode.
-        /// </summary>
+        // ==========================================================
+
         private int GetCustomerCount(int gameMode)
         {
             switch (gameMode)
@@ -88,12 +163,13 @@ namespace Gameplay.Scripts.Controller
             }
         }
 
-        /// <summary>
-        /// Picks a random number of leaf-node foods based on difficulty.
-        /// </summary>
-        private List<FoodNodeData> PickRandomFoods(List<FoodNodeData> leafNodes, int gameMode, Random rng)
+        private List<FoodNodeData> PickRandomFoods(
+            List<FoodNodeData> leafNodes,
+            int gameMode,
+            Random rng)
         {
-            int minFoods, maxFoods;
+            int minFoods;
+            int maxFoods;
 
             switch (gameMode)
             {
@@ -101,14 +177,17 @@ namespace Gameplay.Scripts.Controller
                     minFoods = EASY_MIN_FOODS;
                     maxFoods = EASY_MAX_FOODS;
                     break;
+
                 case 1:
                     minFoods = NORMAL_MIN_FOODS;
                     maxFoods = NORMAL_MAX_FOODS;
                     break;
+
                 case 2:
                     minFoods = HARD_MIN_FOODS;
                     maxFoods = HARD_MAX_FOODS;
                     break;
+
                 default:
                     minFoods = EASY_MIN_FOODS;
                     maxFoods = EASY_MAX_FOODS;
@@ -116,26 +195,15 @@ namespace Gameplay.Scripts.Controller
             }
 
             int foodCount = rng.Next(minFoods, maxFoods + 1);
-            List<FoodNodeData> selectedFoods = new List<FoodNodeData>(foodCount);
+
+            List<FoodNodeData> result = new(foodCount);
 
             for (int i = 0; i < foodCount; i++)
             {
-                int index = rng.Next(leafNodes.Count);
-                selectedFoods.Add(leafNodes[index]);
+                result.Add(leafNodes[rng.Next(leafNodes.Count)]);
             }
 
-            return selectedFoods;
-        }
-
-        /// <summary>
-        /// Extracts all leaf nodes from the FoodGraph.
-        /// A leaf node is a node with no children.
-        /// </summary>
-        private List<FoodNodeData> GetLeafNodes(List<FoodNodeData> allNodes)
-        {
-            return allNodes
-                .Where(node => node.Children == null || node.Children.Count == 0)
-                .ToList();
+            return result;
         }
     }
 }

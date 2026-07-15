@@ -9,7 +9,7 @@ namespace Gameplay.Scripts.Data
         protected int createdAtTurn = 0;
         protected List<ToolData> tools = new List<ToolData>();
         protected const int maximumRewindTurns = 2;
-        protected int maximumInteractingFoodPerTurn = 1;
+        protected const int maximumInteractingFoodPerTurn = 1;
 
         public List<ToolData> Tools
         {
@@ -17,10 +17,29 @@ namespace Gameplay.Scripts.Data
             set => tools = value;
         }
 
+        public int GetReduceCreateTurn()
+        {
+            int bonus = 0;
+            foreach (var toolData in tools)
+            {
+                bonus += toolData.ReduceCreateTurn;
+            }
+
+            return bonus;
+        }
+
         public int MaximumInteractingFoodPerTurn
         {
-            get => maximumInteractingFoodPerTurn;
-            set => maximumInteractingFoodPerTurn = value;
+            get
+            {
+                int bonus = 0;
+                foreach (var toolData in tools)
+                {
+                    bonus += toolData.MaximumFoodInteractPerTurnBonus;
+                }
+
+                return maximumInteractingFoodPerTurn + bonus;
+            }
         }
 
         public int CreatedAtTurn
@@ -37,7 +56,16 @@ namespace Gameplay.Scripts.Data
 
         public int MaximumRewindTurns
         {
-            get => maximumRewindTurns;
+            get
+            {
+                int bonus = 0;
+                foreach (var toolData in tools)
+                {
+                    bonus += toolData.BonusRewindTurn;
+                }
+
+                return maximumRewindTurns + bonus;
+            }
         }
 
         public ChefData Clone()
@@ -45,7 +73,6 @@ namespace Gameplay.Scripts.Data
             return new ChefData()
             {
                 tools = this.tools,
-                maximumInteractingFoodPerTurn = this.maximumInteractingFoodPerTurn,
                 createdAtTurn = this.createdAtTurn
             };
         }

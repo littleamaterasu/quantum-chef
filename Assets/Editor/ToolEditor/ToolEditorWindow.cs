@@ -301,6 +301,15 @@ namespace Editor.ToolEditor
                 MarkDirty();
             });
             detailPanel.Add(reduceField);
+            
+            var bonusInteractField = new IntegerField("Bonus Maximum Food Interact Per Turn") { value = tool.MaximumFoodInteractPerTurnBonus };
+            bonusInteractField.RegisterValueChangedCallback(evt =>
+            {
+                RegisterUndo("Change Bonus Maximum Food Interact Per Turn");
+                tool.MaximumFoodInteractPerTurnBonus = evt.newValue;
+                MarkDirty();
+            });
+            detailPanel.Add(bonusInteractField);
 
             // Spacer
             var spacer = new VisualElement();
@@ -492,7 +501,8 @@ namespace Editor.ToolEditor
                         Name = t.Name,
                         Icon = t.Icon,
                         BonusRewindTurn = t.BonusRewindTurn,
-                        ReduceCreateTurn = t.ReduceCreateTurn
+                        ReduceCreateTurn = t.ReduceCreateTurn,
+                        MaximumFoodInteractPerTurnBonus = t.MaximumFoodInteractPerTurnBonus
                     });
                 }
             }

@@ -8,25 +8,27 @@ namespace Gameplay.Scripts.Controller
         protected MapController mapController;
         protected ChefController chefController;
         protected CustomerController customerController;
-
-        // ---------- Food Graph ----------
-        protected FoodGraphAsset foodGraphAsset;
-
+        
         // ---------- World History ----------
         protected readonly List<MapData> previousMaps = new();
         protected readonly List<ChefData> previousChefs = new();
 
         // ---------- Customer History ----------
-        protected readonly List<CustomerData> previousCustomers = new();
-
-        // ---------- Customer Queue ----------
-        protected List<CustomerData> customerQueue = new();
+        protected readonly List<AllCustomerData> previousCustomers = new();
 
         protected int currentTurn = 0;
         protected int currentCustomerTurn = 0;
 
         // 24 hours
         protected const int MAX_TURN = 24;
+
+        public void TestData()
+        {
+            List<FoodNodeData> demoFood = AssetController.Instance.GetRootNodes();
+            List<ToolData> tools = AssetController.Instance.GetTools();
+            int demoGameMode = 1;
+            StartGame(demoGameMode);
+        }
 
         // gameMode: 0-easy, 1-normal, 2-hard
         public void StartGame(int gameMode = 0)
@@ -39,15 +41,10 @@ namespace Gameplay.Scripts.Controller
             previousCustomers.Clear();
 
             // Generate randomized customers based on difficulty
-            List<FoodNodeData> allNodes = FoodGraphLoader.Load(foodGraphAsset);
-            customerQueue = customerController.GenerateCustomers(gameMode, MAX_TURN, allNodes);
+            List<FoodNodeData> edibleFood = AssetController.Instance.GetLeafNodes();
+            customerController.GenerateCustomers(gameMode, MAX_TURN, edibleFood);
         }
-
-        /// <summary>
-        /// Returns the generated customer queue, sorted by spawn turn ascending.
-        /// </summary>
-        public List<CustomerData> CustomerQueue => customerQueue;
-
+        
         public void ExecuteTurn()
         {
             ExecuteWorldTurn();
@@ -70,7 +67,7 @@ namespace Gameplay.Scripts.Controller
 
         protected void ExecuteCustomerTurn()
         {
-            CustomerData customer = customerController.UpdateTurn(currentCustomerTurn);
+            AllCustomerData customer = customerController.UpdateTurn(currentCustomerTurn);
 
             previousCustomers.Add(customer);
 

@@ -9,8 +9,9 @@ namespace Gameplay.Scripts.Data
         [SerializeField] protected int id;
         [SerializeField] protected string name;
         [SerializeField] protected Sprite icon;
-        [SerializeField] protected int bonusRewindTurn = 0;
-        [SerializeField] protected int reduceCreateTurn = 0;
+        [SerializeField] protected int rewindTurnBonus = 0;
+        [SerializeField] protected int reduceCreateTurnBonus = 0;
+        [SerializeField] protected int maximumFoodInteractPerTurnBonus = 0;
 
         public int ID
         {
@@ -32,14 +33,20 @@ namespace Gameplay.Scripts.Data
 
         public int BonusRewindTurn
         {
-            get => bonusRewindTurn;
-            set => bonusRewindTurn = value;
+            get => rewindTurnBonus;
+            set => rewindTurnBonus = value;
         }
 
         public int ReduceCreateTurn
         {
-            get => reduceCreateTurn;
-            set => reduceCreateTurn = value;
+            get => reduceCreateTurnBonus;
+            set => reduceCreateTurnBonus = value;
+        }
+
+        public int MaximumFoodInteractPerTurnBonus
+        {
+            get => maximumFoodInteractPerTurnBonus;
+            set => maximumFoodInteractPerTurnBonus = value;
         }
     }
-}
+}
