@@ -4,13 +4,13 @@ namespace Gameplay.Scripts.Data
 {
     public class MapData
     {
-        protected int id = 0;
+        protected string id = "";
         protected int createdAtTurn = 0;
         protected List<FoodData> foodData = new();
         protected Dictionary<FoodData, List<FoodData>> usedFood = new();
         protected List<FoodData> creatingFood = new();
 
-        public int ID
+        public string ID
         {
             get => id;
             set => id = value;

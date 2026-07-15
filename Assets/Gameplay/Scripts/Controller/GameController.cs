@@ -1,5 +1,8 @@
+using System;
 using System.Collections.Generic;
 using Gameplay.Scripts.Data;
+using Gameplay.Scripts.Utility;
+using UnityEditor;
 
 namespace Gameplay.Scripts.Controller
 {
@@ -24,8 +27,31 @@ namespace Gameplay.Scripts.Controller
 
         public void TestData()
         {
-            List<FoodNodeData> demoFood = AssetController.Instance.GetRootNodes();
+            List<FoodNodeData> demoFoodNode = AssetController.Instance.GetRootNodes();
             List<ToolData> tools = AssetController.Instance.GetTools();
+            ChefData demoChef = new ChefData()
+            {
+                ID = Guid.NewGuid().ToString(),
+                CreatedAtTurn = 0,
+                Tools = tools
+            };
+
+            List<FoodData> demoFood = new List<FoodData>();
+            foreach (var foodNodeData in demoFoodNode)
+            {
+                demoFood.Add(FoodUtility.CreateFood(foodNodeData, 0));
+            }
+            MapData demoMap = new MapData()
+            {
+                ID = Guid.NewGuid().ToString(),
+                CreatedAtTurn = 0,
+                FoodData = demoFood,
+                CreatingFood = new List<FoodData>(),
+                UsedFood = new Dictionary<FoodData, List<FoodData>>()
+            };
+            
+            chefController.SetChefData(demoChef);
+            mapController.SetMapData(demoMap);
             int demoGameMode = 1;
             StartGame(demoGameMode);
         }

@@ -5,7 +5,7 @@ namespace Gameplay.Scripts.Data
 {
     public class ChefData
     {
-        protected int id = 0;
+        protected string id = "";
         protected int createdAtTurn = 0;
         protected List<ToolData> tools = new List<ToolData>();
         protected const int maximumRewindTurns = 2;
@@ -48,7 +48,7 @@ namespace Gameplay.Scripts.Data
             set => createdAtTurn = value;
         }
 
-        public int ID
+        public string ID
         {
             get => id;
             set => id = value;
