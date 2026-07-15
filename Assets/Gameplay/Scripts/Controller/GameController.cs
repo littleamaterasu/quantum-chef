@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Gameplay.Scripts.Data;
 
 namespace Gameplay.Scripts.Controller
@@ -9,12 +9,18 @@ namespace Gameplay.Scripts.Controller
         protected ChefController chefController;
         protected CustomerController customerController;
 
+        // ---------- Food Graph ----------
+        protected FoodGraphAsset foodGraphAsset;
+
         // ---------- World History ----------
         protected readonly List<MapData> previousMaps = new();
         protected readonly List<ChefData> previousChefs = new();
 
         // ---------- Customer History ----------
         protected readonly List<CustomerData> previousCustomers = new();
+
+        // ---------- Customer Queue ----------
+        protected List<CustomerData> customerQueue = new();
 
         protected int currentTurn = 0;
         protected int currentCustomerTurn = 0;
@@ -31,7 +37,16 @@ namespace Gameplay.Scripts.Controller
             previousMaps.Clear();
             previousChefs.Clear();
             previousCustomers.Clear();
+
+            // Generate randomized customers based on difficulty
+            List<FoodNodeData> allNodes = FoodGraphLoader.Load(foodGraphAsset);
+            customerQueue = customerController.GenerateCustomers(gameMode, MAX_TURN, allNodes);
         }
+
+        /// <summary>
+        /// Returns the generated customer queue, sorted by spawn turn ascending.
+        /// </summary>
+        public List<CustomerData> CustomerQueue => customerQueue;
 
         public void ExecuteTurn()
         {
