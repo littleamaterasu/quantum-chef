@@ -309,8 +309,8 @@ namespace Editor.LevelEditor
 
                 // Food Icon
                 var icon = new Image();
-                icon.style.width = 24;
-                icon.style.height = 24;
+                icon.style.width = 64;
+                icon.style.height = 64;
                 icon.style.marginRight = 6;
 
                 string nodeName = "Unknown Node";
@@ -552,8 +552,8 @@ namespace Editor.LevelEditor
 
             // Sprite preview
             var spritePreview = new Image();
-            spritePreview.style.width = 24;
-            spritePreview.style.height = 24;
+            spritePreview.style.width = 64;
+            spritePreview.style.height = 64;
             spritePreview.style.marginLeft = 8;
             if (customer.sprite != null)
             {
@@ -625,8 +625,8 @@ namespace Editor.LevelEditor
                     chip.style.marginBottom = 4;
 
                     var chipIcon = new Image();
-                    chipIcon.style.width = 18;
-                    chipIcon.style.height = 18;
+                    chipIcon.style.width = 32;
+                    chipIcon.style.height = 32;
                     chipIcon.style.marginRight = 4;
 
                     string foodName = "Unknown";
