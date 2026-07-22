@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Gameplay.Scripts.Data
@@ -10,6 +10,7 @@ namespace Gameplay.Scripts.Data
         public List<FoodNodeData> requireFood = null;
         public int spawnTurn = 0;
         public bool served = false;
+        public bool successfullyServed = false;
         public CustomerData Clone()
         {
             return new CustomerData()
@@ -17,7 +18,9 @@ namespace Gameplay.Scripts.Data
                 id = this.id,
                 sprite = this.sprite,
                 requireFood = this.requireFood,
-                spawnTurn = this.spawnTurn
+                spawnTurn = this.spawnTurn,
+                served = this.served,
+                successfullyServed = this.successfullyServed
             };
         }
     }

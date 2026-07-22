@@ -11,7 +11,14 @@ namespace Gameplay.Scripts.Controller
         protected MapController mapController;
         protected ChefController chefController;
         protected CustomerController customerController;
-        
+
+        private void Start()
+        {
+            mapController = MapController.Instance;
+            chefController = ChefController.Instance;
+            customerController = CustomerController.Instance;
+        }
+
         // ---------- World History ----------
         protected readonly List<MapData> previousMaps = new();
         protected readonly List<ChefData> previousChefs = new();
@@ -25,39 +32,7 @@ namespace Gameplay.Scripts.Controller
         // 24 hours
         protected const int MAX_TURN = 24;
 
-        public void TestData()
-        {
-            List<FoodNodeData> demoFoodNode = AssetController.Instance.GetRootNodes();
-            List<ToolData> tools = AssetController.Instance.GetTools();
-            ChefData demoChef = new ChefData()
-            {
-                ID = Guid.NewGuid().ToString(),
-                CreatedAtTurn = 0,
-                Tools = tools
-            };
-
-            List<FoodData> demoFood = new List<FoodData>();
-            foreach (var foodNodeData in demoFoodNode)
-            {
-                demoFood.Add(FoodUtility.CreateFood(foodNodeData, 0));
-            }
-            MapData demoMap = new MapData()
-            {
-                ID = Guid.NewGuid().ToString(),
-                CreatedAtTurn = 0,
-                FoodData = demoFood,
-                CreatingFood = new List<FoodData>(),
-                UsedFood = new Dictionary<FoodData, List<FoodData>>()
-            };
-            
-            chefController.SetChefData(demoChef);
-            mapController.SetMapData(demoMap);
-            int demoGameMode = 1;
-            StartGame(demoGameMode);
-        }
-
-        // gameMode: 0-easy, 1-normal, 2-hard
-        public void StartGame(int gameMode = 0)
+        public void StartGame(LevelData levelData)
         {
             currentTurn = 0;
             currentCustomerTurn = 0;
@@ -66,9 +41,45 @@ namespace Gameplay.Scripts.Controller
             previousChefs.Clear();
             previousCustomers.Clear();
 
-            // Generate randomized customers based on difficulty
-            List<FoodNodeData> edibleFood = AssetController.Instance.GetLeafNodes();
-            customerController.GenerateCustomers(gameMode, MAX_TURN, edibleFood);
+            List<ToolData> tools = AssetController.Instance != null ? AssetController.Instance.GetTools() : new List<ToolData>();
+            ChefData chef = new ChefData()
+            {
+                ID = Guid.NewGuid().ToString(),
+                CreatedAtTurn = 0,
+                Tools = tools
+            };
+            chefController.SetChefData(chef);
+
+            List<FoodData> initialFoods = new List<FoodData>();
+            if (levelData != null && levelData.initialFoodNodes != null)
+            {
+                foreach (var foodNodeData in levelData.initialFoodNodes)
+                {
+                    if (foodNodeData != null)
+                    {
+                        initialFoods.Add(FoodUtility.CreateFood(foodNodeData, 0));
+                    }
+                }
+            }
+
+            MapData initialMap = new MapData()
+            {
+                ID = Guid.NewGuid().ToString(),
+                CreatedAtTurn = 0,
+                FoodData = initialFoods,
+                CreatingFood = new List<FoodData>(),
+                UsedFood = new Dictionary<FoodData, List<FoodData>>()
+            };
+            mapController.SetMapData(initialMap);
+
+            if (levelData != null && levelData.allCustomerData != null)
+            {
+                customerController.SetCustomerData(levelData.allCustomerData);
+            }
+            else
+            {
+                customerController.SetCustomerData(new AllCustomerData());
+            }
         }
         
         public void ExecuteTurn()
@@ -101,6 +112,17 @@ namespace Gameplay.Scripts.Controller
             currentCustomerTurn++;
         }
 
+        /// <summary>
+        /// Kết thúc game/level hiện tại, tính toán số sao và thưởng coin dựa trên % số lượng khách đã phục vụ thành công.
+        /// </summary>
+        public GameFinishResult FinishCurrentGame(int levelIndex)
+        {
+            int served = customerController.GetServedCustomerCount();
+            int total = customerController.GetTotalCustomerCount();
+
+            return UserDataManager.Instance.FinishGame(levelIndex, served, total);
+        }
+
         #endregion
 
         #region Trim
@@ -130,24 +152,39 @@ namespace Gameplay.Scripts.Controller
 
         #region Rewind
 
-        public void RewindWorld(int turn)
+        /// <summary>
+        /// Trả về danh sách readonly các MapData lịch sử để RewindMapPopup hiển thị.
+        /// </summary>
+        public IReadOnlyList<MapData> GetPreviousMaps()
         {
-            if (turn <= 0)
+            return previousMaps;
+        }
+
+        /// <summary>
+        /// Xóa các FoodData được chọn khỏi tất cả các MapData lịch sử,
+        /// cập nhật createdAtTurn về turn hiện tại, rồi thêm vào map hiện tại.
+        /// </summary>
+        public void ConfirmRewindFood(List<FoodData> selectedFoods)
+        {
+            if (selectedFoods == null || selectedFoods.Count == 0)
                 return;
 
-            turn = System.Math.Min(turn, chefController.GetMaximumRewindTurn());
+            // Xóa khỏi các map lịch sử theo ID
+            HashSet<string> selectedIds = new HashSet<string>();
+            foreach (var food in selectedFoods)
+                selectedIds.Add(food.ID);
 
-            if (turn > previousMaps.Count)
-                return;
+            foreach (var map in previousMaps)
+            {
+                map.FoodData.RemoveAll(f => selectedIds.Contains(f.ID));
+            }
 
-            int targetIndex = previousMaps.Count - turn;
-
-            mapController.SetMapData(previousMaps[targetIndex]);
-            chefController.SetChefData(previousChefs[targetIndex]);
-
-            previousMaps.RemoveRange(targetIndex, turn);
-            previousChefs.RemoveRange(targetIndex, turn);
-            currentTurn -= turn;
+            // Cập nhật createdAtTurn và thêm vào map hiện tại
+            foreach (var food in selectedFoods)
+            {
+                food.CreatedAtTurn = currentTurn;
+                mapController.AddFood(food);
+            }
         }
 
         public void RewindCustomer(int turn)

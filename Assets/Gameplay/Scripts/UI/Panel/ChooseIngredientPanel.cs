@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Gameplay.Scripts.Controller;
 using Gameplay.Scripts.Data;
 using UnityEngine;
@@ -132,6 +132,20 @@ namespace Gameplay.Scripts.UI
                 // gameObject.SetActive(false);
                 // ClearSelection();
             }
+        }
+
+        // ------------------------------------------------------------------ //
+        //  Show / Hide
+        // ------------------------------------------------------------------ //
+
+        public void Show()
+        {
+            gameObject.SetActive(true);
+        }
+
+        public void Hide()
+        {
+            gameObject.SetActive(false);
         }
     }
 }

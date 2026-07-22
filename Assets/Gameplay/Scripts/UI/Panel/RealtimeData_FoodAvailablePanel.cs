@@ -1,11 +1,11 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Gameplay.Scripts.Data;
 using Gameplay.Scripts.Event;
 using UnityEngine;
 
 namespace Gameplay.Scripts.UI
 {
-    public class AvailableFoodPanel : MonoBehaviour
+    public class AvailableFoodPanel : Singleton<AvailableFoodPanel>
     {
         [SerializeField] private RectTransform content;
         [SerializeField] private RectTransform poolRoot;
@@ -24,19 +24,21 @@ namespace Gameplay.Scripts.UI
         {
             EventBus.Subscribe<AddFoodEvent>(OnAddFood);
             EventBus.Subscribe<RemoveFoodEvent>(OnRemoveFood);
+            EventBus.Subscribe<UpdateAvailableFoodListEvent>(Clear);
         }
 
         private void OnDisable()
         {
             EventBus.Unsubscribe<AddFoodEvent>(OnAddFood);
             EventBus.Unsubscribe<RemoveFoodEvent>(OnRemoveFood);
+            EventBus.Unsubscribe<UpdateAvailableFoodListEvent>(Clear);
         }
 
         /// <summary>
         /// Rebuild toàn bộ UI từ state hiện tại.
         /// Gọi sau khi rewind hoặc UpdateTurn().
         /// </summary>
-        public void Refresh(List<FoodData> foods)
+        public void Clear(UpdateAvailableFoodListEvent e)
         {
             foreach (AvailableFoodCard card in foodCards.Values)
             {
@@ -44,14 +46,6 @@ namespace Gameplay.Scripts.UI
             }
 
             foodCards.Clear();
-
-            foreach (FoodData food in foods)
-            {
-                AvailableFoodCard card = pool.Get(content);
-                card.Setup(food);
-
-                foodCards.Add(food.ID, card);
-            }
         }
 
         private void OnAddFood(AddFoodEvent evt)
@@ -71,6 +65,20 @@ namespace Gameplay.Scripts.UI
                 return;
 
             pool.Release(card);
+        }
+
+        // ------------------------------------------------------------------ //
+        //  Show / Hide
+        // ------------------------------------------------------------------ //
+
+        public void Show()
+        {
+            gameObject.SetActive(true);
+        }
+
+        public void Hide()
+        {
+            gameObject.SetActive(false);
         }
     }
 }

@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using Gameplay.Scripts.Data;
+using Gameplay.Scripts.Event;
+using UnityEngine;
 
 namespace Gameplay.Scripts.Controller
 {
@@ -13,72 +15,103 @@ namespace Gameplay.Scripts.Controller
         // Customer đang active trên scene
         protected readonly Dictionary<string, Customer> customers = new();
 
+        // Danh sách khách theo thứ tự hàng chờ (index 0 = đứng đầu)
+        protected readonly List<Customer> customerQueue = new();
+
         // Lookup CustomerData theo id
         protected readonly Dictionary<string, CustomerData> customerDataMap = new();
 
         // ==========================================================
-        // CONFIG
+        // QUEUE POSITION CONFIG
         // ==========================================================
 
-        private const int EASY_CUSTOMER_COUNT = 5;
-        private const int NORMAL_CUSTOMER_COUNT = 7;
-        private const int HARD_CUSTOMER_COUNT = 9;
+        /// <summary>Vị trí đứng đầu hàng – assign qua Inspector.</summary>
+        [SerializeField] protected Transform firstPosition;
 
-        private const int START_SERVE_TIME = 6;
+        /// <summary>
+        /// Offset giữa 2 khách liên tiếp trong hàng chéo.
+        /// X/Y dịch ngang/dọc, Z tăng để layer đúng trong 2D SpriteRenderer.
+        /// </summary>
+        [SerializeField] protected Vector3 queueOffset = new Vector3(0.5f, -0.3f, 1f);
 
-        private const int EASY_MIN_FOODS = 1;
-        private const int EASY_MAX_FOODS = 1;
 
-        private const int NORMAL_MIN_FOODS = 1;
-        private const int NORMAL_MAX_FOODS = 2;
-
-        private const int HARD_MIN_FOODS = 1;
-        private const int HARD_MAX_FOODS = 3;
-
-        // ==========================================================
 
         public void SetCustomerData(AllCustomerData allCustomerData)
         {
             this.allCustomerData = allCustomerData;
+
+            HashSet<FoodNodeData> foodNeedToServe = new();
+            
+            foreach (Customer customer in customers.Values)
+            {
+                customerPool.Release(customer);
+            }
+            
+            customers.Clear();
+            customerDataMap.Clear();
+            customerQueue.Clear();
+
+            if (allCustomerData != null)
+            {
+                foreach (CustomerData customer in allCustomerData.allCustomerData)
+                {
+                    if (customer.served || customer.requireFood == null)
+                        continue;
+
+                    foreach (FoodNodeData food in customer.requireFood)
+                    {
+                        foodNeedToServe.Add(food);
+                    }
+                }
+            }
+
+            // double loop to seperate logic
+            if (allCustomerData != null)
+            {
+                int queueIndex = 0;
+                foreach (CustomerData data in allCustomerData.allCustomerData)
+                {
+                    if (data.served)
+                        continue;
+
+                    if (data.spawnTurn != allCustomerData.createdAtTurn)
+                        continue;
+
+                    Customer customer = customerPool.Get(null);
+                    customer.Setup(data);
+                    customer.transform.position = GetQueuePosition(queueIndex);
+
+                    customers[data.id] = customer;
+                    customerDataMap[data.id] = data;
+                    customerQueue.Add(customer);
+
+                    queueIndex++;
+                }
+            }
+
+            EventBus.Publish(new UpdateCustomerListEvent
+            {
+                foodNeedToServe = new List<FoodNodeData>(foodNeedToServe)
+            });
         }
 
         public AllCustomerData UpdateTurn(int currentTurn)
         {
             allCustomerData = allCustomerData.Clone();
 
-            // Rebuild toàn bộ customer trên scene
-            foreach (Customer customer in customers.Values)
-            {
-                customerPool.Release(customer);
-            }
-
-            customers.Clear();
-            customerDataMap.Clear();
-
             foreach (CustomerData data in allCustomerData.allCustomerData)
             {
-                // Khách turn trước chưa được serve
-                if (data.spawnTurn == currentTurn - 1 && !data.served)
+                // Customer quá hạn nhưng chưa được phục vụ
+                if (data.spawnTurn < currentTurn && !data.served)
                 {
+                    data.served = true;
+
                     Customer customer = customerPool.Get(null);
                     customer.Setup(data);
                     customer.OnServeFail();
 
-                    // nếu OnServeFail() không tự release thì:
+                    // Nếu OnServeFail() không tự release
                     customerPool.Release(customer);
-
-                    continue;
-                }
-
-                // Khách xuất hiện ở turn hiện tại
-                if (data.spawnTurn == currentTurn && !data.served)
-                {
-                    Customer customer = customerPool.Get(null);
-
-                    customer.Setup(data);
-
-                    customers[data.id] = customer;
-                    customerDataMap[data.id] = data;
                 }
             }
 
@@ -102,108 +135,69 @@ namespace Gameplay.Scripts.Controller
                 return;
 
             data.served = true;
+            data.successfullyServed = true;
 
             customer.OnServe();
 
             customers.Remove(data.id);
             customerDataMap.Remove(data.id);
+            customerQueue.Remove(customer);
 
-            // nếu OnServe() không tự release thì:
+            // Nếu OnServe() không tự release thì:
             customerPool.Release(customer);
+
+            // Đẩy toàn bộ hàng chờ lên 1 vị trí
+            AdvanceQueue();
         }
 
-        // ==========================================================
-
-        public AllCustomerData GenerateCustomers(int gameMode, int maxTurn, List<FoodNodeData> edibleFood)
+        /// <summary>
+        /// Trả về tổng số lượng khách hàng có trong level hiện tại.
+        /// </summary>
+        public int GetTotalCustomerCount()
         {
-            Random rng = new Random();
+            return allCustomerData != null && allCustomerData.allCustomerData != null
+                ? allCustomerData.allCustomerData.Count
+                : 0;
+        }
 
-            int customerCount = GetCustomerCount(gameMode);
+        /// <summary>
+        /// Trả về số lượng khách hàng đã phục vụ thành công trong level hiện tại.
+        /// </summary>
+        public int GetServedCustomerCount()
+        {
+            if (allCustomerData == null || allCustomerData.allCustomerData == null)
+                return 0;
 
-            if (edibleFood.Count == 0)
-                return new AllCustomerData();
-
-            List<CustomerData> customers = new(customerCount);
-
-            for (int i = 0; i < customerCount; i++)
+            int count = 0;
+            foreach (var customer in allCustomerData.allCustomerData)
             {
-                int spawnTurn = rng.Next(START_SERVE_TIME, maxTurn);
-
-                List<FoodNodeData> requiredFoods =
-                    PickRandomFoods(edibleFood, gameMode, rng);
-
-                customers.Add(new CustomerData
+                if (customer.served && customer.successfullyServed)
                 {
-                    id = Guid.NewGuid().ToString(),
-                    spawnTurn = spawnTurn,
-                    requireFood = requiredFoods,
-                    served = false,
-                    sprite = AssetController.Instance.GetRandomCustomerSprite()
-                });
+                    count++;
+                }
             }
-
-            customers.Sort((a, b) => a.spawnTurn.CompareTo(b.spawnTurn));
-
-            return new AllCustomerData
-            {
-                allCustomerData = customers
-            };
+            return count;
         }
 
-        // ==========================================================
-
-        private int GetCustomerCount(int gameMode)
+        /// <summary>
+        /// Tính vị trí thế giới của khách thứ <paramref name="index"/> trong hàng.
+        /// </summary>
+        protected Vector3 GetQueuePosition(int index)
         {
-            switch (gameMode)
-            {
-                case 0: return EASY_CUSTOMER_COUNT;
-                case 1: return NORMAL_CUSTOMER_COUNT;
-                case 2: return HARD_CUSTOMER_COUNT;
-                default: return EASY_CUSTOMER_COUNT;
-            }
+            Vector3 origin = firstPosition != null ? firstPosition.position : Vector3.zero;
+            return origin + queueOffset * index;
         }
 
-        private List<FoodNodeData> PickRandomFoods(
-            List<FoodNodeData> leafNodes,
-            int gameMode,
-            Random rng)
+        /// <summary>
+        /// Dịch chuyển tất cả khách còn lại về đúng vị trí hàng chờ của mình.
+        /// Gọi sau khi 1 khách bị xóa khỏi <c>customerQueue</c>.
+        /// </summary>
+        protected void AdvanceQueue()
         {
-            int minFoods;
-            int maxFoods;
-
-            switch (gameMode)
+            for (int i = 0; i < customerQueue.Count; i++)
             {
-                case 0:
-                    minFoods = EASY_MIN_FOODS;
-                    maxFoods = EASY_MAX_FOODS;
-                    break;
-
-                case 1:
-                    minFoods = NORMAL_MIN_FOODS;
-                    maxFoods = NORMAL_MAX_FOODS;
-                    break;
-
-                case 2:
-                    minFoods = HARD_MIN_FOODS;
-                    maxFoods = HARD_MAX_FOODS;
-                    break;
-
-                default:
-                    minFoods = EASY_MIN_FOODS;
-                    maxFoods = EASY_MAX_FOODS;
-                    break;
+                customerQueue[i].MoveTo(GetQueuePosition(i));
             }
-
-            int foodCount = rng.Next(minFoods, maxFoods + 1);
-
-            List<FoodNodeData> result = new(foodCount);
-
-            for (int i = 0; i < foodCount; i++)
-            {
-                result.Add(leafNodes[rng.Next(leafNodes.Count)]);
-            }
-
-            return result;
         }
     }
 }

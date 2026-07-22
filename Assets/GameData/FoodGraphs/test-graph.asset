@@ -13,54 +13,104 @@ MonoBehaviour:
   m_Name: test-graph
   m_EditorClassIdentifier: 
   serializedNodes:
+  - id: 1dfea036-69e7-4e80-8ee9-0ad229e8477b
+    name: Russian Cream Salad
+    sprite: {fileID: -2837989934481326614, guid: da247ec09f3508a48b302b517a1664f2, type: 3}
+    turnsToCreate: 3
+    baseBuyInCost: -1
+    autoTransformIn: -1
+    autoTransformNodeId: 
+    autoDestroyIn: -1
+    enabled: 1
+    position: {x: 1339.2, y: -288}
   - id: d329b029-0dd5-4de2-8f00-102fe4edaf13
     name: Diced Potato
-    sprite: {fileID: 0}
-    turnsToCreate: 0
+    sprite: {fileID: 782846276369757003, guid: 136bc6a7393e7c547aa7dfa527d497fd, type: 3}
+    turnsToCreate: 1
     baseBuyInCost: -1
     autoTransformIn: -1
     autoTransformNodeId: 
     autoDestroyIn: -1
     enabled: 1
-    position: {x: 871.2, y: 212.80002}
-  - id: fa5bcf83-bc13-420a-acb4-9dd5ccf10fd9
-    name: Peeled Potato
-    sprite: {fileID: 10911, guid: 0000000000000000f000000000000000, type: 0}
-    turnsToCreate: 0
+    position: {x: 871.2, y: 120.799995}
+  - id: 3dcfec5b-30fb-4dc9-9027-49708e8c8319
+    name: Fried Potato
+    sprite: {fileID: 1228308273375919738, guid: 7fee30d38c8d1b747b1cf4926d5fc40e, type: 3}
+    turnsToCreate: 3
     baseBuyInCost: -1
     autoTransformIn: -1
     autoTransformNodeId: 
     autoDestroyIn: -1
     enabled: 1
-    position: {x: 416, y: 120.799995}
+    position: {x: 1339.2, y: -711.2}
+  - id: 9245bd39-586d-43fd-b827-991109100084
+    name: Stewed Vegetables
+    sprite: {fileID: -5284549433770255605, guid: 99f1b8bbd9771454c93aaacb39f32592, type: 3}
+    turnsToCreate: 5
+    baseBuyInCost: -1
+    autoTransformIn: -1
+    autoTransformNodeId: 
+    autoDestroyIn: -1
+    enabled: 1
+    position: {x: 1339.2, y: 120.799995}
   - id: 23c09367-4605-4d90-8e22-1f24b10c9e5e
-    name: Sliced Potato
-    sprite: {fileID: 0}
+    name: Batonnet Potato
+    sprite: {fileID: 3236120338431297198, guid: e290a0717008aca4cab23b3cfe74e948, type: 3}
     turnsToCreate: 0
     baseBuyInCost: -1
     autoTransformIn: -1
     autoTransformNodeId: 
     autoDestroyIn: -1
     enabled: 1
-    position: {x: 871.2, y: -132}
+    position: {x: 871.2, y: -711.2}
   - id: 94f52929-9e92-4f4d-a02a-ed2218a232af
-    name: Minced Potato
-    sprite: {fileID: 0}
-    turnsToCreate: 0
+    name: Mashed Potato
+    sprite: {fileID: 843602948067672072, guid: f0c9f4e5df38fb748a136e1d9de4586a, type: 3}
+    turnsToCreate: 1
     baseBuyInCost: -1
     autoTransformIn: -1
     autoTransformNodeId: 
     autoDestroyIn: -1
     enabled: 1
     position: {x: 871.2, y: 555.19995}
-  - id: 36103cc1-b7b8-44c6-a34a-1f4d107cc4a4
-    name: Raw Potato
-    sprite: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
+  - id: 8f71e994-8b68-43a2-b09b-723b2c4a2b73
+    name: Beef Steak
+    sprite: {fileID: 2218472671536504515, guid: c44ecb70bf419444989805c0e0612bf9, type: 3}
+    turnsToCreate: 4
+    baseBuyInCost: -1
+    autoTransformIn: -1
+    autoTransformNodeId: 
+    autoDestroyIn: -1
+    enabled: 1
+    position: {x: 1339.2, y: 555.19995}
+  - id: e2b39dc5-f60a-44b9-b05d-5c513f14cb75
+    name: Beef
+    sprite: {fileID: -3816939989130230767, guid: 092081aa0af66a944bf56120bef27124, type: 3}
     turnsToCreate: 0
     baseBuyInCost: -1
     autoTransformIn: -1
     autoTransformNodeId: 
     autoDestroyIn: -1
+    enabled: 1
+    position: {x: 62.4, y: 998.4}
+  - id: fa5bcf83-bc13-420a-acb4-9dd5ccf10fd9
+    name: Peeled Potato
+    sprite: {fileID: -4308861655583921784, guid: 5034db914bbffdf4aa5ad2d9e8b426b2, type: 3}
+    turnsToCreate: 1
+    baseBuyInCost: -1
+    autoTransformIn: -1
+    autoTransformNodeId: 
+    autoDestroyIn: -1
+    enabled: 1
+    position: {x: 413.6, y: 120.799995}
+  - id: 36103cc1-b7b8-44c6-a34a-1f4d107cc4a4
+    name: Raw Potato
+    sprite: {fileID: -8039068202569788505, guid: ee4b51a388b685c499085480e0763528, type: 3}
+    turnsToCreate: 0
+    baseBuyInCost: 10
+    autoTransformIn: -1
+    autoTransformNodeId: 
+    autoDestroyIn: 5
     enabled: 1
     position: {x: 62.4, y: 120.799995}
   serializedEdges:
@@ -72,3 +122,13 @@ MonoBehaviour:
     childId: 94f52929-9e92-4f4d-a02a-ed2218a232af
   - parentId: 36103cc1-b7b8-44c6-a34a-1f4d107cc4a4
     childId: fa5bcf83-bc13-420a-acb4-9dd5ccf10fd9
+  - parentId: 23c09367-4605-4d90-8e22-1f24b10c9e5e
+    childId: 3dcfec5b-30fb-4dc9-9027-49708e8c8319
+  - parentId: d329b029-0dd5-4de2-8f00-102fe4edaf13
+    childId: 1dfea036-69e7-4e80-8ee9-0ad229e8477b
+  - parentId: 94f52929-9e92-4f4d-a02a-ed2218a232af
+    childId: 8f71e994-8b68-43a2-b09b-723b2c4a2b73
+  - parentId: e2b39dc5-f60a-44b9-b05d-5c513f14cb75
+    childId: 8f71e994-8b68-43a2-b09b-723b2c4a2b73
+  - parentId: d329b029-0dd5-4de2-8f00-102fe4edaf13
+    childId: 9245bd39-586d-43fd-b827-991109100084

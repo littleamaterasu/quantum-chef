@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using Gameplay.Scripts.Data;
 using Gameplay.Scripts.Event;
@@ -20,7 +20,18 @@ namespace Gameplay.Scripts.Controller
         public void SetMapData(MapData mapData)
         {
             this.mapData = mapData;
+            EventBus.UnsubscribeRequest<CreatingFoodEvent>();
             EventBus.SubscribeRequest<CreatingFoodEvent, bool>(TryCreatingFood);
+            EventBus.Publish(new UpdateAvailableFoodListEvent());
+            foreach (var foodData in mapData.FoodData)
+            {
+                AddFood(foodData);
+            }
+            
+            foreach (var foodData in mapData.CreatingFood)
+            {
+                AddCreatingFood(foodData);
+            }
         }
 
         protected virtual bool TryCreatingFood(CreatingFoodEvent e)
@@ -110,7 +121,7 @@ namespace Gameplay.Scripts.Controller
             AddFood(transformed);
         }
 
-        protected virtual void AddFood(FoodData food)
+        public virtual void AddFood(FoodData food)
         {
             mapData.FoodData.Add(food);
 

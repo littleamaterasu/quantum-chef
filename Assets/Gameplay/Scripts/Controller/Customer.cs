@@ -1,4 +1,4 @@
-﻿using Gameplay.Scripts.Data;
+using Gameplay.Scripts.Data;
 using UnityEngine;
 
 namespace Gameplay.Scripts.Controller
@@ -20,6 +20,15 @@ namespace Gameplay.Scripts.Controller
         public void OnServe()
         {
             
+        }
+
+        /// <summary>
+        /// Di chuyển customer tới vị trí mới trong hàng chờ.
+        /// Thay bằng coroutine / DOTween nếu muốn có animation.
+        /// </summary>
+        public virtual void MoveTo(Vector3 targetPosition)
+        {
+            transform.position = targetPosition;
         }
     }
 }

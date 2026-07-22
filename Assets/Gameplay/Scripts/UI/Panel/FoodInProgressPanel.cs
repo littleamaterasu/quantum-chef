@@ -1,11 +1,11 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Gameplay.Scripts.Data;
 using Gameplay.Scripts.Event;
 using UnityEngine;
 
 namespace Gameplay.Scripts.UI
 {
-    public class FoodInProgressPanel : MonoBehaviour
+    public class FoodInProgressPanel : Singleton<FoodInProgressPanel>
     {
         [SerializeField] private RectTransform content;
         [SerializeField] private RectTransform poolRoot;
@@ -49,6 +49,20 @@ namespace Gameplay.Scripts.UI
 
             foodCards.Remove(evt.foodData);
             pool.Release(card);
+        }
+
+        // ------------------------------------------------------------------ //
+        //  Show / Hide
+        // ------------------------------------------------------------------ //
+
+        public void Show()
+        {
+            gameObject.SetActive(true);
+        }
+
+        public void Hide()
+        {
+            gameObject.SetActive(false);
         }
     }
 }

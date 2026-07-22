@@ -1,10 +1,11 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Gameplay.Scripts.Data;
+using Gameplay.Scripts.Event;
 using UnityEngine;
 
 namespace Gameplay.Scripts.UI
 {
-    public class FoodNeedToServePanel : MonoBehaviour
+    public class FoodNeedToServePanel : Singleton<FoodNeedToServePanel>
     {
         [SerializeField] private RectTransform content;
         [SerializeField] private RectTransform poolRoot;
@@ -16,6 +17,7 @@ namespace Gameplay.Scripts.UI
         private void Awake()
         {
             pool = new ObjectPool<FoodNeedToServeCard>(foodCardPrefab, poolRoot);
+            EventBus.Subscribe<UpdateCustomerListEvent>(e => Setup(e.foodNeedToServe));
         }
 
         public void Setup(List<FoodNodeData> foods)
@@ -39,6 +41,20 @@ namespace Gameplay.Scripts.UI
             }
 
             foodCards.Clear();
+        }
+
+        // ------------------------------------------------------------------ //
+        //  Show / Hide
+        // ------------------------------------------------------------------ //
+
+        public void Show()
+        {
+            gameObject.SetActive(true);
+        }
+
+        public void Hide()
+        {
+            gameObject.SetActive(false);
         }
     }
 }

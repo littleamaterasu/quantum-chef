@@ -15,11 +15,13 @@ MonoBehaviour:
   tools:
   - id: 0
     name: Royal Pan
-    icon: {fileID: 0}
-    bonusRewindTurn: 0
-    reduceCreateTurn: 0
+    icon: {fileID: 10915, guid: 0000000000000000f000000000000000, type: 0}
+    rewindTurnBonus: 0
+    reduceCreateTurnBonus: 2
+    maximumFoodInteractPerTurnBonus: 0
   - id: 1
     name: Royal Sticks
     icon: {fileID: 10901, guid: 0000000000000000f000000000000000, type: 0}
-    bonusRewindTurn: 2
-    reduceCreateTurn: 0
+    rewindTurnBonus: 0
+    reduceCreateTurnBonus: 0
+    maximumFoodInteractPerTurnBonus: 2

@@ -145,8 +145,8 @@ namespace Editor.FoodGraphEditor
 
             // Sprite preview image container
             var spritePreview = new Image();
-            spritePreview.style.width = 64;
-            spritePreview.style.height = 64;
+            spritePreview.style.width = 128;
+            spritePreview.style.height = 128;
             spritePreview.style.marginTop = 4;
             spritePreview.style.marginBottom = 4;
             spritePreview.style.alignSelf = Align.Center;
