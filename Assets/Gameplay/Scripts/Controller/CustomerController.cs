@@ -95,24 +95,70 @@ namespace Gameplay.Scripts.Controller
             });
         }
 
+        public AllCustomerData GetAllCustomerData()
+        {
+            return allCustomerData;
+        }
+
         public AllCustomerData UpdateTurn(int currentTurn)
         {
             allCustomerData = allCustomerData.Clone();
+            bool needAdvance = false;
 
             foreach (CustomerData data in allCustomerData.allCustomerData)
             {
-                // Customer quá hạn nhưng chưa được phục vụ
+                // Customer quá hạn nhưng chưa được đánh dấu kết thúc
                 if (data.spawnTurn < currentTurn && !data.served)
                 {
                     data.served = true;
 
-                    Customer customer = customerPool.Get(null);
-                    customer.Setup(data);
-                    customer.OnServeFail();
+                    bool hasActive = customers.TryGetValue(data.id, out Customer activeCustomer);
 
-                    // Nếu OnServeFail() không tự release
-                    customerPool.Release(customer);
+                    // Kiểm tra xem khách đã được serve ít nhất 1 lần trong turn chưa
+                    if (data.serveCount > 0)
+                    {
+                        data.successfullyServed = true;
+
+                        if (hasActive)
+                        {
+                            activeCustomer.OnServe();
+                        }
+                    }
+                    else
+                    {
+                        data.successfullyServed = false;
+
+                        if (hasActive)
+                        {
+                            activeCustomer.OnServeFail();
+                        }
+                        else
+                        {
+                            Customer tempCustomer = customerPool.Get(null);
+                            tempCustomer.Setup(data);
+                            tempCustomer.OnServeFail();
+                            customerPool.Release(tempCustomer);
+                        }
+                    }
+
+                    // Release khách đã được served (dù failed hay successful) khỏi active queue/scene
+                    if (hasActive)
+                    {
+                        customers.Remove(data.id);
+                        customerDataMap.Remove(data.id);
+                        customerQueue.Remove(activeCustomer);
+                        customerPool.Release(activeCustomer);
+                        needAdvance = true;
+                    }
                 }
+
+                // Reset serve count cho turn mới
+                data.serveCount = 0;
+            }
+
+            if (needAdvance)
+            {
+                AdvanceQueue();
             }
 
             allCustomerData.createdAtTurn = currentTurn;
@@ -134,20 +180,10 @@ namespace Gameplay.Scripts.Controller
             if (data.served)
                 return;
 
-            data.served = true;
-            data.successfullyServed = true;
+            // Trong 1 turn khách hàng có thể được serve nhiều lần
+            data.serveCount++;
 
             customer.OnServe();
-
-            customers.Remove(data.id);
-            customerDataMap.Remove(data.id);
-            customerQueue.Remove(customer);
-
-            // Nếu OnServe() không tự release thì:
-            customerPool.Release(customer);
-
-            // Đẩy toàn bộ hàng chờ lên 1 vị trí
-            AdvanceQueue();
         }
 
         /// <summary>
@@ -171,7 +207,7 @@ namespace Gameplay.Scripts.Controller
             int count = 0;
             foreach (var customer in allCustomerData.allCustomerData)
             {
-                if (customer.served && customer.successfullyServed)
+                if (customer.successfullyServed || customer.serveCount > 0)
                 {
                     count++;
                 }

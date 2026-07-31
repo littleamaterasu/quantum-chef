@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Editor;
 using Gameplay.Scripts.Data;
 using UnityEditor;
 using UnityEditor.UIElements;
@@ -10,6 +11,7 @@ namespace Editor.ToolEditor
     public class ToolEditorWindow : EditorWindow
     {
         private ToolCollectionAsset currentAsset;
+        private BundleRegistryAsset bundleRegistry;
         private bool isDirty = false;
 
         private ListView toolListView;
@@ -28,6 +30,7 @@ namespace Editor.ToolEditor
         private void OnEnable()
         {
             saveChangesMessage = "The tool collection has unsaved changes. Do you want to save them?";
+            bundleRegistry = BundleEditorHelper.FindOrLoadBundleRegistry();
             ConstructVisualTree();
             rootVisualElement.RegisterCallback<KeyDownEvent>(OnKeyDown);
 
@@ -311,6 +314,19 @@ namespace Editor.ToolEditor
             });
             detailPanel.Add(bonusInteractField);
 
+            // Bundle Dropdown
+            var bundleOptions = BundleEditorHelper.BuildDropdownOptions(bundleRegistry);
+            var bundleDropdown = new DropdownField("Bundle",
+                new System.Collections.Generic.List<string>(bundleOptions),
+                BundleEditorHelper.BundleIdToIndex(tool.BundleId, bundleRegistry));
+            bundleDropdown.RegisterValueChangedCallback(evt =>
+            {
+                RegisterUndo("Change Tool Bundle");
+                tool.BundleId = BundleEditorHelper.IndexToBundleId(bundleDropdown.index, bundleRegistry);
+                MarkDirty();
+            });
+            detailPanel.Add(bundleDropdown);
+
             // Spacer
             var spacer = new VisualElement();
             spacer.style.flexGrow = 1;
@@ -502,7 +518,8 @@ namespace Editor.ToolEditor
                         Icon = t.Icon,
                         BonusRewindTurn = t.BonusRewindTurn,
                         ReduceCreateTurn = t.ReduceCreateTurn,
-                        MaximumFoodInteractPerTurnBonus = t.MaximumFoodInteractPerTurnBonus
+                        MaximumFoodInteractPerTurnBonus = t.MaximumFoodInteractPerTurnBonus,
+                        BundleId = t.BundleId
                     });
                 }
             }

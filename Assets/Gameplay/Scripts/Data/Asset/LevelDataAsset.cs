@@ -16,6 +16,11 @@ namespace Gameplay.Scripts.Data
         public List<SerializedCustomerData> customers = new List<SerializedCustomerData>();
 
         /// <summary>
+        /// The bundle ID that unlocks this level. Empty string means Base Game (always unlocked).
+        /// </summary>
+        public string bundleId = "";
+
+        /// <summary>
         /// Reconstructs and returns a runtime LevelData object from this asset's serialized data.
         /// </summary>
         public LevelData GetLevelData()

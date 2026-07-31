@@ -11,6 +11,7 @@ namespace Gameplay.Scripts.Data
         public int spawnTurn = 0;
         public bool served = false;
         public bool successfullyServed = false;
+        public int serveCount = 0;
         public CustomerData Clone()
         {
             return new CustomerData()
@@ -20,7 +21,8 @@ namespace Gameplay.Scripts.Data
                 requireFood = this.requireFood,
                 spawnTurn = this.spawnTurn,
                 served = this.served,
-                successfullyServed = this.successfullyServed
+                successfullyServed = this.successfullyServed,
+                serveCount = this.serveCount
             };
         }
     }

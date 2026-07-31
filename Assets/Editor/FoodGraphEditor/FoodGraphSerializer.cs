@@ -36,7 +36,8 @@ namespace Editor.FoodGraphEditor
                     autoDestroyIn = nv.NodeData.AutoDestroyIn,
                     enabled = nv.NodeData.Enabled,
                     position = new Vector2(rect.x, rect.y),
-                    autoTransformNodeId = nv.NodeData.AutoTransform != null ? nv.NodeData.AutoTransform.ID : string.Empty
+                    autoTransformNodeId = nv.NodeData.AutoTransform != null ? nv.NodeData.AutoTransform.ID : string.Empty,
+                    bundleId = nv.NodeData.BundleId
                 };
 
                 asset.SerializedNodes.Add(sNode);

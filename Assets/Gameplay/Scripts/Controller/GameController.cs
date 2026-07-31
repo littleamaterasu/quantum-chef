@@ -92,11 +92,14 @@ namespace Gameplay.Scripts.Controller
 
         protected void ExecuteWorldTurn()
         {
-            MapData map = mapController.UpdateTurn(currentTurn);
-            ChefData chef = chefController.UpdateTurn(currentTurn);
+            var currentMap = mapController.MapData;
+            var currentChef = chefController.GetChefData();
 
-            previousMaps.Add(map);
-            previousChefs.Add(chef);
+            previousMaps.Add(currentMap?.Clone());
+            previousChefs.Add(currentChef?.Clone());
+
+            mapController.UpdateTurn(currentTurn);
+            chefController.UpdateTurn(currentTurn);
 
             TrimWorldHistory();
             currentTurn++;
@@ -104,9 +107,11 @@ namespace Gameplay.Scripts.Controller
 
         protected void ExecuteCustomerTurn()
         {
-            AllCustomerData customer = customerController.UpdateTurn(currentCustomerTurn);
+            var currentCustomer = customerController.GetAllCustomerData();
 
-            previousCustomers.Add(customer);
+            previousCustomers.Add(currentCustomer?.Clone());
+
+            customerController.UpdateTurn(currentCustomerTurn);
 
             TrimCustomerHistory();
             currentCustomerTurn++;

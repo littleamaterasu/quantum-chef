@@ -50,7 +50,8 @@ namespace Gameplay.Scripts.Data
                     BaseBuyInCost = sNode.baseBuyInCost,
                     AutoTransformIn = sNode.autoTransformIn,
                     AutoDestroyIn = sNode.autoDestroyIn,
-                    Enabled = sNode.enabled
+                    Enabled = sNode.enabled,
+                    BundleId = sNode.bundleId ?? ""
                 };
 
                 // Initialize empty parent/child lists.
@@ -114,6 +115,8 @@ namespace Gameplay.Scripts.Data
         public int autoDestroyIn;
         public bool enabled;
         public Vector2 position;
+        /// <summary>Bundle ID that unlocks this food node. Empty = Base Game.</summary>
+        public string bundleId;
     }
 
     [Serializable]

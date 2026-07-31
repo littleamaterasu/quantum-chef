@@ -19,6 +19,10 @@ namespace Gameplay.Scripts.Data
         [SerializeField] protected int autoTransformIn = -1;
         [SerializeField] protected FoodNodeData autoTransform = null;
         [SerializeField] protected int autoDestroyIn = -1;
+        /// <summary>
+        /// The bundle this food node belongs to. Empty string means Base Game (always unlocked).
+        /// </summary>
+        [SerializeField] protected string bundleId = "";
 
         public string Name
         {
@@ -84,6 +88,15 @@ namespace Gameplay.Scripts.Data
         {
             get => enabled;
             set => enabled = value;
+        }
+
+        /// <summary>
+        /// The bundle ID that unlocks this food node. Empty = Base Game (always available).
+        /// </summary>
+        public string BundleId
+        {
+            get => bundleId;
+            set => bundleId = value;
         }
     }
 }

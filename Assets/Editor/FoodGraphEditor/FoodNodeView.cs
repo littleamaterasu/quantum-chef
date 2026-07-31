@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using Editor;
 using Gameplay.Scripts.Data;
+using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEditor.UIElements;
 using UnityEngine;
@@ -20,6 +22,8 @@ namespace Editor.FoodGraphEditor
 
         private DropdownField autoTransformDropdown;
         private List<FoodNodeView> autoTransformNodeChoices = new List<FoodNodeView>();
+        private BundleRegistryAsset bundleRegistry;
+        private DropdownField bundleDropdown;
 
         // Block callbacks when programmatically setting values
         private bool isUpdatingUI = false;
@@ -35,6 +39,9 @@ namespace Editor.FoodGraphEditor
             }
 
             title = string.IsNullOrEmpty(nodeData.Name) ? "Food Node" : nodeData.Name;
+
+            // Load bundle registry once per node
+            bundleRegistry = BundleEditorHelper.FindOrLoadBundleRegistry();
 
             // Apply custom styling for premium looks
             ApplyStyles();
@@ -263,6 +270,20 @@ namespace Editor.FoodGraphEditor
                 }
             });
             customContainer.Add(autoTransformDropdown);
+
+            // Bundle Dropdown
+            var bundleOptions = BundleEditorHelper.BuildDropdownOptions(bundleRegistry);
+            bundleDropdown = new DropdownField("Bundle",
+                new List<string>(bundleOptions),
+                BundleEditorHelper.BundleIdToIndex(NodeData.BundleId, bundleRegistry));
+            bundleDropdown.RegisterValueChangedCallback(evt =>
+            {
+                if (isUpdatingUI) return;
+                OnRequestUndoRegistration?.Invoke("Change Node Bundle");
+                NodeData.BundleId = BundleEditorHelper.IndexToBundleId(bundleDropdown.index, bundleRegistry);
+                OnNodeModified?.Invoke();
+            });
+            customContainer.Add(bundleDropdown);
 
             extensionContainer.Add(customContainer);
             RefreshExpandedState();

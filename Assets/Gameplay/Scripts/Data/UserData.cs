@@ -11,5 +11,7 @@ namespace Gameplay.Scripts.Data
         public List<string> ownedToolIds = new List<string>();
         public int reachedLevel = 0;
         public List<int> levelStars = new List<int>();
+        /// <summary>Steam DLC / bundle IDs the user has purchased and unlocked.</summary>
+        public List<string> ownedBundleIds = new List<string>();
     }
 }

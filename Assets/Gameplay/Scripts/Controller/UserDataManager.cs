@@ -90,6 +90,54 @@ namespace Gameplay.Scripts.Controller
 
         #endregion
 
+        #region Bundles
+
+        public IReadOnlyList<string> OwnedBundleIds => Data.ownedBundleIds;
+
+        /// <summary>
+        /// Returns true if the content identified by <paramref name="bundleId"/> is available to the user.
+        /// An empty or null bundleId means "Base Game" – always unlocked.
+        /// </summary>
+        public bool HasBundle(string bundleId)
+        {
+            // Base game content is always available
+            if (string.IsNullOrEmpty(bundleId)) return true;
+
+            if (Data.ownedBundleIds == null) return false;
+            return Data.ownedBundleIds.Contains(bundleId);
+        }
+
+        /// <summary>
+        /// Grants ownership of a bundle to the user and saves.
+        /// Typically called after a successful Steam DLC purchase verification.
+        /// </summary>
+        public void AddBundle(string bundleId)
+        {
+            if (string.IsNullOrEmpty(bundleId)) return;
+            if (Data.ownedBundleIds == null) Data.ownedBundleIds = new List<string>();
+
+            if (!Data.ownedBundleIds.Contains(bundleId))
+            {
+                Data.ownedBundleIds.Add(bundleId);
+                Save();
+            }
+        }
+
+        /// <summary>
+        /// Removes ownership of a bundle (e.g. refund / revoke).
+        /// </summary>
+        public void RemoveBundle(string bundleId)
+        {
+            if (string.IsNullOrEmpty(bundleId) || Data.ownedBundleIds == null) return;
+
+            if (Data.ownedBundleIds.Remove(bundleId))
+            {
+                Save();
+            }
+        }
+
+        #endregion
+
         #region Level Progression & Stars
 
         public int ReachedLevel => Data.reachedLevel;

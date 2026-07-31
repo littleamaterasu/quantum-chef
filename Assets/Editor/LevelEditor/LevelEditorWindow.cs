@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Editor;
 using Gameplay.Scripts.Data;
 using UnityEditor;
 using UnityEditor.UIElements;
@@ -13,6 +14,7 @@ namespace Editor.LevelEditor
     {
         private LevelDataAsset currentAsset;
         private FoodGraphAsset foodGraphAsset;
+        private BundleRegistryAsset bundleRegistry;
         private bool isDirty = false;
 
         private List<FoodNodeData> availableFoodNodes = new List<FoodNodeData>();
@@ -25,6 +27,7 @@ namespace Editor.LevelEditor
         private VisualElement timelineContainer;
         private ObjectField assetObjectField;
         private ObjectField graphObjectField;
+        private DropdownField levelBundleDropdown;
 
         [MenuItem("Tools/Level Editor")]
         public static void OpenWindow()
@@ -47,6 +50,7 @@ namespace Editor.LevelEditor
         private void OnEnable()
         {
             saveChangesMessage = "The Level Data has unsaved changes. Do you want to save them?";
+            bundleRegistry = BundleEditorHelper.FindOrLoadBundleRegistry();
             ConstructVisualTree();
 
             if (currentAsset == null)
@@ -133,6 +137,28 @@ namespace Editor.LevelEditor
                 }
             });
             toolbar.Add(assetObjectField);
+
+            // Bundle Dropdown – which bundle unlocks this level
+            var bundleLabel = new Label(" Bundle: ");
+            bundleLabel.style.unityTextAlign = TextAnchor.MiddleCenter;
+            bundleLabel.style.marginLeft = 8;
+            toolbar.Add(bundleLabel);
+
+            var bundleOptions = BundleEditorHelper.BuildDropdownOptions(bundleRegistry);
+            levelBundleDropdown = new DropdownField(
+                new System.Collections.Generic.List<string>(bundleOptions),
+                currentAsset != null
+                    ? BundleEditorHelper.BundleIdToIndex(currentAsset.bundleId, bundleRegistry)
+                    : 0);
+            levelBundleDropdown.style.width = 160;
+            levelBundleDropdown.RegisterValueChangedCallback(evt =>
+            {
+                if (currentAsset == null) return;
+                RegisterUndo("Change Level Bundle");
+                currentAsset.bundleId = BundleEditorHelper.IndexToBundleId(levelBundleDropdown.index, bundleRegistry);
+                MarkDirty();
+            });
+            toolbar.Add(levelBundleDropdown);
 
             rootVisualElement.Add(toolbar);
 
@@ -251,8 +277,7 @@ namespace Editor.LevelEditor
             }
 
             foreach (var node in (foodGraphAsset.Nodes ?? new List<FoodNodeData>()).Where(node => node != null &&
-                         !string.IsNullOrEmpty(node.ID) && node.Children != null &&
-                         node.Children.Count != 0))
+                         !string.IsNullOrEmpty(node.ID)))
             {
                 availableFoodNodes.Add(node);
                 foodNodeMap[node.ID] = node;
@@ -360,6 +385,7 @@ namespace Editor.LevelEditor
             var menu = new GenericMenu();
             foreach (var node in availableFoodNodes)
             {
+                if (node.Children == null || node.Children.Count == 0) continue;
                 string displayName = string.IsNullOrEmpty(node.Name) ? node.ID : node.Name;
                 string nodeId = node.ID;
                 menu.AddItem(new GUIContent(displayName), false, () => AddInitialFood(nodeId));
@@ -705,6 +731,7 @@ namespace Editor.LevelEditor
             var menu = new GenericMenu();
             foreach (var node in availableFoodNodes)
             {
+                if (node.Children != null && node.Children.Count != 0) continue;
                 string displayName = string.IsNullOrEmpty(node.Name) ? node.ID : node.Name;
                 string nodeId = node.ID;
                 menu.AddItem(new GUIContent(displayName), false, () => AddRequiredFood(customer, nodeId));
@@ -778,6 +805,13 @@ namespace Editor.LevelEditor
 
             isDirty = false;
             RefreshAvailableFoodNodes();
+
+            // Sync the bundle dropdown to the newly loaded asset
+            if (levelBundleDropdown != null)
+            {
+                levelBundleDropdown.index = BundleEditorHelper.BundleIdToIndex(currentAsset.bundleId, bundleRegistry);
+            }
+
             RebuildUI();
         }
 
